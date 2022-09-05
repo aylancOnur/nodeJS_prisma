@@ -104,6 +104,39 @@ router.get("/group", async (req, res) => {
   res.json(users);
 });
 
+router.patch("/user", async (req, res) => {
+  const { name, email } = req.body;
+  try {
+    const updateUser = await prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        name: name,
+      },
+    });
+    res.json(updateUser);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
+});
+
+router.delete("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const deleteUser = await prisma.user.delete({
+      where: {
+        id: Number(userId),
+      },
+    });
+    res.json(deleteUser);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
+});
+
 app.use(express.json());
 app.use(router);
 
