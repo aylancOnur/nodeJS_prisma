@@ -84,7 +84,24 @@ const createMultipleUser = async () => {
 router.get("/", (req, res) => {
   res.json("Hello from prisma");
   // createUser();
-  createMultipleUser();
+  // createMultipleUser();
+});
+
+router.get("/user", async (req, res) => {
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({
+    where: {
+      email: email,
+    },
+  });
+  res.json(user);
+});
+
+router.get("/group", async (req, res) => {
+  const users = await prisma.user.groupBy({
+    by: ["name"],
+  });
+  res.json(users);
 });
 
 app.use(express.json());
