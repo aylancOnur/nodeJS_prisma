@@ -34,74 +34,68 @@ prisma.$on("beforeExit", async () => {
   //   });
 });
 
-const createUser = async () => {
-  prisma.user
-    .create({
-      data: {
-        email: "test@mail.com",
-        name: "name",
-        age: 24,
-        birthDate: new Date(),
-      },
-    })
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((e) => {
-      console.log("An error occured when user created", e);
-    });
-};
-
-const createMultipleUser = async () => {
-  prisma.user
-    .createMany({
-      data: [
-        { name: "Bob", email: "bob@mail.com", age: 20, birthDate: new Date() },
-        { name: "Bobo", email: "bob@mail.com", age: 20, birthDate: new Date() }, // Duplicate unique key!
-        {
-          name: "Yewange",
-          email: "yewade@mail.com",
-          age: 20,
-          birthDate: new Date(),
-        },
-        {
-          name: "Angelique",
-          email: "angelique@mail.com",
-          age: 20,
-          birthDate: new Date(),
-        },
-      ],
-      skipDuplicates: true, // Skip "Bobo"
-    })
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((e) => {
-      console.log("An error occured when user created", e);
-    });
-};
-
 router.get("/", (req, res) => {
   res.json("Hello from prisma");
-  // createUser();
-  // createMultipleUser();
+});
+
+router.post("/user", async (req, res) => {
+  const { email, name, age } = req.body;
+  try {
+    const createUser = await prisma.user.create({
+      data: {
+        email: email,
+        name: name,
+        age: age,
+        birthDate: new Date(),
+      },
+    });
+    res.json(createUser);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
+});
+
+router.post("/multiple", async (req, res) => {
+  const { data } = req.body;
+  console.log("dataaaaaaaaaaaaaaaaaaaaaaa", data);
+  try {
+    const multipleUser = await prisma.user.createMany({
+      data: data,
+      skipDuplicates: true, // Skip "Bobo"
+    });
+    res.json(multipleUser);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
 });
 
 router.get("/user", async (req, res) => {
   const { email } = req.body;
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
-  res.json(user);
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
 });
 
 router.get("/group", async (req, res) => {
-  const users = await prisma.user.groupBy({
-    by: ["name"],
-  });
-  res.json(users);
+  try {
+    const users = await prisma.user.groupBy({
+      by: ["name"],
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
 });
 
 router.patch("/user", async (req, res) => {
