@@ -39,14 +39,18 @@ router.get("/", (req, res) => {
 });
 
 router.post("/user", async (req, res) => {
-  const { email, name, age } = req.body;
+  const { email, name, postTitle, bio } = req.body;
   try {
     const createUser = await prisma.user.create({
       data: {
         email: email,
         name: name,
-        age: age,
-        birthDate: new Date(),
+        posts: {
+          create: { title: postTitle },
+        },
+        profile: {
+          create: { bio: bio },
+        },
       },
     });
     res.json(createUser);
@@ -56,15 +60,19 @@ router.post("/user", async (req, res) => {
   }
 });
 
-router.post("/multiple", async (req, res) => {
-  const { data } = req.body;
-  console.log("dataaaaaaaaaaaaaaaaaaaaaaa", data);
+router.put("/update/:postId", async (req, res) => {
+  const { postTitle } = req.body;
+  const { postId } = req.params;
   try {
-    const multipleUser = await prisma.user.createMany({
-      data: data,
-      skipDuplicates: true, // Skip "Bobo"
+    const updatePost = await prisma.post.update({
+      where: {
+        id: Number(postId),
+      },
+      data: {
+        title: postTitle,
+      },
     });
-    res.json(multipleUser);
+    res.json(updatePost);
   } catch (error) {
     res.status(500).json({ message: "Bir hata gerçekleşti!" });
     console.log("error =>", error);
@@ -86,30 +94,15 @@ router.get("/user", async (req, res) => {
   }
 });
 
-router.get("/group", async (req, res) => {
+router.get("/allUsers", async (req, res) => {
   try {
-    const users = await prisma.user.groupBy({
-      by: ["name"],
-    });
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: "Bir hata gerçekleşti!" });
-    console.log("error =>", error);
-  }
-});
-
-router.patch("/user", async (req, res) => {
-  const { name, email } = req.body;
-  try {
-    const updateUser = await prisma.user.update({
-      where: {
-        email: email,
-      },
-      data: {
-        name: name,
+    const allUsers = await prisma.user.findMany({
+      include: {
+        posts: true,
+        profile: true,
       },
     });
-    res.json(updateUser);
+    res.json(allUsers);
   } catch (error) {
     res.status(500).json({ message: "Bir hata gerçekleşti!" });
     console.log("error =>", error);
@@ -125,6 +118,33 @@ router.delete("/user/:userId", async (req, res) => {
       },
     });
     res.json(deleteUser);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
+});
+
+router.post("/multiple", async (req, res) => {
+  const { data } = req.body;
+  console.log("dataaaaaaaaaaaaaaaaaaaaaaa", data);
+  try {
+    const multipleUser = await prisma.user.createMany({
+      data: data,
+      skipDuplicates: true, // Skip "Bobo"
+    });
+    res.json(multipleUser);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
+});
+
+router.get("/group", async (req, res) => {
+  try {
+    const users = await prisma.user.groupBy({
+      by: ["name"],
+    });
+    res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Bir hata gerçekleşti!" });
     console.log("error =>", error);
