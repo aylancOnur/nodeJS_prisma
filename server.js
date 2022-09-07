@@ -124,6 +124,20 @@ router.delete("/user/:userId", async (req, res) => {
   }
 });
 
+router.get("/paginated", async (req, res) => {
+  const { start, end } = req.query
+  try {
+    const user = await prisma.post.findMany({
+      skip: Number(start), // başlangıç sayfası
+      take: Number(end),  // bitiş sayfası
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Bir hata gerçekleşti!" });
+    console.log("error =>", error);
+  }
+});
+
 router.post("/multiple", async (req, res) => {
   const { data } = req.body;
   console.log("dataaaaaaaaaaaaaaaaaaaaaaa", data);
